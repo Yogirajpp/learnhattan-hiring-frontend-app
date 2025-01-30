@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import Projects from './components/Projects';
 import Leaderboard from './components/Leaderboard';
 import Jobs from './components/Jobs';
+import Issues from './components/Issues';
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:projectId/issues" element={<Issues />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/jobs" element={<Jobs />} />
           </Routes>
