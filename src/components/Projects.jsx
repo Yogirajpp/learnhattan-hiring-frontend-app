@@ -25,13 +25,21 @@ const ProjectDashboard = () => {
       });
     };
   
-    // Fetch projects on initial load and after reconnection
-    socket.on("connect", fetchProjects);
+    // Fetch projects on initial load
+    fetchProjects();
   
-    // return () => {
-    //   socket.disconnect();
-    // };
+    // Handle reconnection
+    socket.on("connect", () => {
+      console.log("Socket reconnected. Fetching projects...");
+      fetchProjects();
+    });
+  
+    // Cleanup the socket listener when the component unmounts
+    return () => {
+      socket.off("connect");
+    };
   }, []);
+  
   
   const handleCardClick = (projectId) => {
     navigate(`/projects/${projectId}/issues`);

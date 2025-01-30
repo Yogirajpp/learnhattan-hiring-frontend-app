@@ -42,7 +42,7 @@ const Issues = () => {
 
   return (
     <div className="p-4">
-      <Button className="mb-4" onClick={() => navigate("/")}>
+      <Button className="mb-4" onClick={() => navigate("/projects")}>
         Back to Projects
       </Button>
       <h2 className="text-xl font-semibold mb-4">Project Issues</h2>
