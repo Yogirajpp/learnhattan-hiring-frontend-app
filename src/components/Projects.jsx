@@ -17,6 +17,7 @@ const ProjectDashboard = () => {
     const fetchProjects = () => {
       socket.emit("getAllProjects", {}, (response) => {
         if (response.success) {
+          console.log("Fetched projects:", response.projects);
           setProjects(response.projects);
         } else {
           console.error("Failed to fetch projects:", response.error);

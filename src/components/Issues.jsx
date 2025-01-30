@@ -1,5 +1,5 @@
 // src/components/Issues.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { Card, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
@@ -18,23 +18,25 @@ const Issues = () => {
 
     // Emit event to fetch project issues
     socket.emit("getProjectIssues", { projectId }, (response) => {
+      console.log('running')
       if (response.success) {
+        console.log("Fetched issues:", response);
         setIssues(response.issues);
       } else {
         console.error("Failed to fetch issues:", response.error);
       }
     });
 
-    // Listen for real-time issue updates in the room
-    socket.on(`project_${projectId}`, (updatedIssues) => {
-      console.log("Received real-time issue updates:", updatedIssues);
-      setIssues(updatedIssues);
+    // Listen for real-time issue updates with correct event name
+    socket.on(`updateProjectIssues`, (updatedData) => {
+      console.log("Received real-time issue updates:", updatedData);
+      setIssues(updatedData.issues);
     });
 
     // Cleanup on component unmount
     return () => {
-      socket.off(`project_${projectId}`);
-      socket.disconnect();
+      socket.off(`updateProjectIssues`); // Listen for updates, not projectId directly
+      // socket.disconnect();
     };
   }, [projectId]);
 
