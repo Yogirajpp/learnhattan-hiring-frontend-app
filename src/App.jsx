@@ -4,10 +4,10 @@ import SidebarComponent from './components/Sidebar'; // Import the Sidebar compo
 import { SidebarProvider } from "@/components/ui/sidebar"; // Import the SidebarProvider
 import BreadcrumbComponent from './components/Breadcrumb';
 import Dashboard from './components/Dashboard';
-import Projects from './components/Projects';
+import Projects from './components/Projects/Projects';
 import Leaderboard from './components/Leaderboard';
 import Jobs from './components/Jobs';
-import Issues from './components/Issues';
+import Issues from './components/Issues/Issues';
 
 const App = () => {
   return (
