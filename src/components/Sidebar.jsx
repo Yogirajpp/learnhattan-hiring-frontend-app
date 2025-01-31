@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
-import { Bot, BookOpen, SquareTerminal, Settings2, Frame, PieChart, Map } from "lucide-react";
-import { Sidebar, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { Sidebar, SidebarFooter, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger } from "@/components/ui/sidebar";
+import useAuth from '@/hooks/auth/useAuth';
+import { BookOpen, Bot, Frame, Map, PieChart, Settings2, SquareTerminal } from "lucide-react";
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const data = {
   teams: [
@@ -29,6 +30,8 @@ const data = {
 };
 
 const SidebarComponent = () => {
+  const { isAuthenticated, user, isLoading, logout } = useAuth()
+
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Function to toggle the sidebar state
@@ -41,7 +44,7 @@ const SidebarComponent = () => {
       <SidebarInset>
         <header className="flex h-16 items-center justify-between transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4">
           {/* Conditionally render h1 based on isCollapsed state */}
-          {!isCollapsed && 
+          {!isCollapsed &&
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">
                 Learnhattan
@@ -51,13 +54,13 @@ const SidebarComponent = () => {
               </span>
             </div>
           }
-          
+
           <div className="flex items-center gap-2">
             {!isCollapsed && <Separator orientation="vertical" className="mr-2 h-4" />}
             <SidebarTrigger className="-ml-1" onClick={toggleSidebar} />
           </div>
         </header>
-        
+
         <SidebarHeader>
           {/* Platform Section */}
           <h2 className={`px-2 py-2 text-2md ${isCollapsed ? 'hidden' : 'block'}`}>Platform</h2>
@@ -93,6 +96,25 @@ const SidebarComponent = () => {
             ))}
           </SidebarMenu>
         </SidebarHeader>
+
+        <SidebarFooter className='p-0'>
+          <div className='flex-1 flex items-center justify-center text-white bg-black p-2'>
+            {isLoading ? (
+              <div className="flex gap-2 items-center">
+                <span className="font-semibold text-sm">Loading...</span>
+              </div>
+            ) : isAuthenticated ? (
+              <div className="flex flex-col gap-2 items-center">
+                <span className="font-semibold text-sm">{user.email}</span>
+                <button onClick={logout} className="px-2 py-1 text-sm flex items-center justify-center border border-white rounded outline-none">🚫 Logout</button>
+              </div>
+            ): (
+              <Link to="/auth" className='flex-1 items-center justify-center flex'>
+                Login
+              </Link>
+            )}
+          </div>
+        </SidebarFooter>
       </SidebarInset>
     </Sidebar>
   );
