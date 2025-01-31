@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 const ProjectFilter = ({ languages, projects, onApplyFilters }) => {
   const [selectedLanguage, setSelectedLanguage] = useState(""); // Can hold one language or "" for none
@@ -59,7 +59,9 @@ const ProjectFilter = ({ languages, projects, onApplyFilters }) => {
             <div
               key={language}
               onClick={() => handleLanguageSelect(language)}
-              className={`cursor-pointer px-3 py-2 p-2 border rounded-sm hover:bg-muted ${selectedLanguage === language ? "bg-primary text-white" : ""}`}
+              className={`cursor-pointer px-3 py-2 p-2 border rounded-sm hover:bg-muted ${
+                selectedLanguage === language ? "bg-primary text-white" : ""
+              }`}
             >
               {language} x{languageCounts[language] || 0}
             </div>
