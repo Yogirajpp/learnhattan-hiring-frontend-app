@@ -15,7 +15,7 @@ const App = () => {
       <SidebarProvider> {/* Wrap Sidebar with SidebarProvider */}
         <SidebarComponent /> {/* Render the Sidebar */}
         <main className="flex-1 p-6">
-          <BreadcrumbComponent />
+          {/* <BreadcrumbComponent /> */}
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Projects />} />

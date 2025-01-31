@@ -58,7 +58,7 @@ const Issues = () => {
       <Button className="mb-4" onClick={() => navigate("/projects")}>
         Back to Projects
       </Button>
-      <div className=" flex gap-2">
+      <div className="flex gap-2">
         {/* Issues List (50% width) */}
         <div className="w-2/5 overflow-y-auto pr-4">
           {displayedIssues.length > 0 ? (
