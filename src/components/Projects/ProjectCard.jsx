@@ -1,4 +1,3 @@
-import React from "react";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { FaGithub, FaCircle, FaCodeBranch, FaCode, FaStar, FaClock } from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
@@ -13,6 +12,8 @@ const formatNumber = (num) => {
     return num; // No formatting needed for numbers less than 1000
   }
 };
+
+import PropTypes from 'prop-types';
 
 const ProjectCard = ({ project, onClick }) => {
   const { name, latestGitHubData = {} } = project;
@@ -66,6 +67,11 @@ const ProjectCard = ({ project, onClick }) => {
       </CardContent>
     </Card>
   );
+};
+
+ProjectCard.propTypes = {
+  project: PropTypes.object.isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default ProjectCard;

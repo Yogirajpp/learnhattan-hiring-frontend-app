@@ -3,7 +3,7 @@ import { SidebarProvider } from "@/components/ui/sidebar"; // Import the Sidebar
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Auth from './components/Auth';
 import GitHubOAuth from "./components/Auth/GitHubOAuth";
-import BreadcrumbComponent from './components/Breadcrumb';
+// import BreadcrumbComponent from './components/Breadcrumb';
 import Dashboard from './components/Dashboard';
 import Jobs from './components/Jobs';
 import Leaderboard from './components/Leaderboard';
