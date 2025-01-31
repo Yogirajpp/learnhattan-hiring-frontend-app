@@ -32,12 +32,12 @@ const ProjectCard = ({ project, onClick }) => {
         <div className="flex items-center justify-between">
           <CardTitle className="text-2xl font-medium text-foreground">{latestGitHubData.name}</CardTitle>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted text-sm text-foreground rounded-sm border border-border">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EBCCEF] text-sm text-foreground rounded-sm border border-border">
               <span className="font-medium">Open Issues:</span>
               <span>{formatNumber(latestGitHubData.issues || 0)}</span>
             </div>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-muted text-sm text-foreground rounded-sm border border-border">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#EBCCEF] text-sm text-foreground rounded-sm border border-border">
               <FaCodeBranch className="w-4 h-4 text-black" />
               <span>{formatNumber(latestGitHubData.forks || 0)}</span>
             </div>

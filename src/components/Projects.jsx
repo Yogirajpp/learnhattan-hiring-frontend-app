@@ -103,18 +103,18 @@ const ProjectDashboard = () => {
           ))}
 
           {/* Pagination Controls */}
-          <div className="flex justify-end gap-2 mt-4">
+          <div className="flex justify-end gap-2 mt-2">
             <button
               onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+              className="px-4 py-2 bg-gray-200 rounded-sm disabled:opacity-50"
             >
               Previous
             </button>
             <button
               onClick={() => paginate(currentPage + 1)}
               disabled={indexOfLastProject >= filteredProjects.length}
-              className="px-4 py-2 bg-gray-200 rounded-md disabled:opacity-50"
+              className="px-4 py-2 bg-gray-200 rounded-sm disabled:opacity-50"
             >
               Next
             </button>
