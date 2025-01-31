@@ -1,6 +1,44 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:5000"); // Adjust to match your backend
 
 const IssueDetail = ({ selectedIssue }) => {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedIssue) return;
+    
+    console.log(selectedIssue);
+
+    // Extract owner and repoName from the issue URL
+    const urlParts = selectedIssue.url.split("/");
+    const owner = urlParts[3]; // "facebook"
+    const repoName = urlParts[4]; // "react"
+    const issueId = urlParts[6]; // Use issue number instead of id
+    console.log(owner, repoName, issueId);
+
+    setLoading(true);
+    socket.emit(
+      "getIssueComments",
+      { owner, repoName, issueId },
+      (response) => {
+        setLoading(false);
+        if (response.success) {
+            console.log(response.comments);
+          setComments(response.comments);
+        } else {
+          console.error(response.error);
+        }
+      }
+    );
+  }, [selectedIssue]);
+
   if (!selectedIssue) {
     return <p className="text-gray-500">Select an issue to view details.</p>;
   }
@@ -18,20 +56,35 @@ const IssueDetail = ({ selectedIssue }) => {
       <div className="mt-2">
         {selectedIssue.labels.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {selectedIssue.labels.map((label, idx) => (
-              <span key={idx} className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-200">
-                {label}
+            {selectedIssue.labels.map((label) => (
+              <span
+                key={label.id}
+                className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-200"
+              >
+                {label.name}
               </span>
             ))}
           </div>
         )}
       </div>
       <div className="mt-2">
-        <div className="h-80 overflow-auto">
-          <p className="text-sm">{selectedIssue.body || "No description available"}</p>
+        <div className="h-80 overflow-auto border p-2 bg-gray-50 rounded">
+          {loading ? (
+            <p className="text-gray-500">Loading comments...</p>
+          ) : comments.length > 0 ? (
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              rehypePlugins={[rehypeRaw]}
+              className="prose text-sm"
+            >
+              {comments[0].body || "No comment available"}
+            </ReactMarkdown>
+          ) : (
+            <p className="text-gray-500">No comments found.</p>
+          )}
         </div>
       </div>
-      <div className="mt-4 flex justify-between">
+      <div className="mt-4 flex justify-between gap-2">
         <Button as="a" href={selectedIssue.url} target="_blank" className="w-full">
           View Issue on GitHub
         </Button>

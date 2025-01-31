@@ -3,9 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import IssueCard from "./IssueCard";
-import IssueDetail from "./IssueDetail";
+import IssueDetail from "./issueDetail";
+import { baseurl } from "@/lib/utils";
 
-const socket = io("http://localhost:5000");
+const socket = io(`${baseurl}`);
 
 const Issues = () => {
   const { projectId } = useParams();

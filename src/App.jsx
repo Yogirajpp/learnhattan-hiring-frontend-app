@@ -5,13 +5,13 @@ import Auth from './components/Auth';
 import GitHubOAuth from "./components/Auth/GitHubOAuth";
 import BreadcrumbComponent from './components/Breadcrumb';
 import Dashboard from './components/Dashboard';
-import Issues from './components/Projects/Issues';
 import Jobs from './components/Jobs';
 import Leaderboard from './components/Leaderboard';
-import Projects from './components/Projects';
-import SidebarComponent from './components/Issues/Sidebar'; // Import the Sidebar component
+import SidebarComponent from './components/Sidebar'; // Import the Sidebar component
 import AuthProvider from "./providers/auth-provider";
 import QueryProvider from './providers/query-provider';
+import Issues from "./components/Issues/Issues";
+import ProjectDashboard from "./components/Projects/Projects";
 
 const App = () => {
   return (
@@ -26,7 +26,7 @@ const App = () => {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/auth/oauth/github" element={<GitHubOAuth />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/projects" element={<Projects />} />
+                <Route path="/projects" element={<ProjectDashboard />} />
                 <Route path="/projects/:projectId/issues" element={<Issues />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/jobs" element={<Jobs />} />
