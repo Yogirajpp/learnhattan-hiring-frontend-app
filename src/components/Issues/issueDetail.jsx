@@ -1,43 +1,51 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { io } from "socket.io-client";
+import { AuthContext } from "@/providers/auth-provider";
 
 const socket = io("http://localhost:5000"); // Adjust to match your backend
 
 const IssueDetail = ({ selectedIssue }) => {
+  const { user, isAuthenticated } = useContext(AuthContext); // Access user and isAuthenticated from AuthContext
+  console.log("User:", user);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!selectedIssue) return;
-    
-    console.log(selectedIssue);
+    if (isAuthenticated) {
+      if (!selectedIssue) return;
+      
+      console.log(selectedIssue);
+      const userId = user._id; // Assuming `user.id` holds the userId
+        console.log("Fetching issue detail for user:", userId);
 
-    // Extract owner and repoName from the issue URL
-    const urlParts = selectedIssue.url.split("/");
-    const owner = urlParts[3]; // "facebook"
-    const repoName = urlParts[4]; // "react"
-    const issueId = urlParts[6]; // Use issue number instead of id
-    console.log(owner, repoName, issueId);
 
-    setLoading(true);
-    socket.emit(
-      "getIssueComments",
-      { owner, repoName, issueId },
-      (response) => {
-        setLoading(false);
-        if (response.success) {
-            console.log(response.comments);
-          setComments(response.comments);
-        } else {
-          console.error(response.error);
+      // Extract owner and repoName from the issue URL
+      const urlParts = selectedIssue.url.split("/");
+      const owner = urlParts[3]; // "facebook"
+      const repoName = urlParts[4]; // "react"
+      const issueId = urlParts[6]; // Use issue number instead of id
+      console.log(owner, repoName, issueId);
+
+      setLoading(true);
+      socket.emit(
+        "getIssueComments",
+        {userId, owner, repoName, issueId },
+        (response) => {
+          setLoading(false);
+          if (response.success) {
+              console.log(response.comments);
+            setComments(response.comments);
+          } else {
+            console.error(response.error);
+          }
         }
-      }
-    );
-  }, [selectedIssue]);
+      );
+    }
+  }, [isAuthenticated, selectedIssue]);
 
   if (!selectedIssue) {
     return <p className="text-gray-500">Select an issue to view details.</p>;

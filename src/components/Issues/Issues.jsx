@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import IssueCard from "./IssueCard";
 import IssueDetail from "./issueDetail";
 import { baseurl } from "@/lib/utils";
+import { AuthContext } from "@/providers/auth-provider";
 
 const socket = io(`${baseurl}`);
 
 const Issues = () => {
+  const { user, isAuthenticated } = useContext(AuthContext); // Access user and isAuthenticated from AuthContext
+  console.log("User:", user);
   const { projectId } = useParams();
   const [issues, setIssues] = useState([]);
   const [selectedIssue, setSelectedIssue] = useState(null);
@@ -18,29 +21,36 @@ const Issues = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!projectId) return;
+    if (isAuthenticated) {
 
-    // Emit event to fetch project issues
-    socket.emit("getProjectIssues", { projectId }, (response) => {
-      if (response.success) {
-        setIssues(response.issues);
-        setTotalPages(Math.ceil(response.issues.length / issuesPerPage));
-      } else {
-        console.error("Failed to fetch issues:", response.error);
-      }
-    });
 
-    // Listen for real-time issue updates
-    socket.on(`updateProjectIssues`, (updatedData) => {
-      setIssues(updatedData.issues);
-      setTotalPages(Math.ceil(updatedData.issues.length / issuesPerPage));
-    });
+      if (!projectId) return;
 
-    // Cleanup on component unmount
-    return () => {
-      socket.off(`updateProjectIssues`);
-    };
-  }, [projectId]);
+      const userId = user._id; // Assuming `user.id` holds the userId
+        console.log("Fetching issues for user:", userId);
+
+      // Emit event to fetch project issues
+      socket.emit("getProjectIssues", { userId, projectId }, (response) => {
+        if (response.success) {
+          setIssues(response.issues);
+          setTotalPages(Math.ceil(response.issues.length / issuesPerPage));
+        } else {
+          console.error("Failed to fetch issues:", response.error);
+        }
+      });
+
+      // Listen for real-time issue updates
+      socket.on(`updateProjectIssues`, (updatedData) => {
+        setIssues(updatedData.issues);
+        setTotalPages(Math.ceil(updatedData.issues.length / issuesPerPage));
+      });
+
+      // Cleanup on component unmount
+      return () => {
+        socket.off(`updateProjectIssues`);
+      };
+    }
+  }, [isAuthenticated, projectId]);
 
   const handleIssueSelect = (issue) => {
     setSelectedIssue(issue);

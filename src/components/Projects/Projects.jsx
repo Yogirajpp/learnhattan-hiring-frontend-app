@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { io } from "socket.io-client";
 import ProjectCard from "./ProjectCard";
 import ProjectFilter from "./ProjectFilter";
 import { useNavigate } from "react-router-dom";
 import { baseurl } from "@/lib/utils";
+import { AuthContext } from "../../providers/auth-provider"; // Import the AuthContext
 
 const socket = io(`${baseurl}`, {
   reconnection: true,
@@ -12,6 +13,8 @@ const socket = io(`${baseurl}`, {
 });
 
 const ProjectDashboard = () => {
+  const { user, isAuthenticated } = useContext(AuthContext); // Access user and isAuthenticated from AuthContext
+  console.log("User:", user);
   const [allProjects, setAllProjects] = useState([]); // Store all projects (unfiltered)
   const [filteredProjects, setFilteredProjects] = useState([]); // Store filtered projects
   const [languages, setLanguages] = useState([]); // Store all unique languages
@@ -21,58 +24,68 @@ const ProjectDashboard = () => {
 
   // Fetch all projects and extract unique languages
   const fetchProjects = (filters = {}) => {
-    socket.emit("getAllProjects", filters, (response) => {
-      if (response.success) {
-        // Store all projects (unfiltered)
-        setAllProjects(response.projects);
+    if (user && user._id) { // Ensure the user is authenticated and userId is available
+      const userId = user._id; // Assuming `user.id` holds the userId
+      console.log("Fetching projects for user:", userId);
 
-        // Extract unique languages from all projects
-        const uniqueLanguages = [];
-        response.projects.forEach((project) => {
-          const lang = project.latestGitHubData.language;
-          if (lang && !uniqueLanguages.includes(lang)) {
-            uniqueLanguages.push(lang);
+      const requestData = {
+        ...filters,
+        userId, // Add userId to the request data
+      };
+
+      socket.emit("getAllProjects", requestData, (response) => {
+        if (response.success) {
+          setAllProjects(response.projects);
+          console.log(response.projects);
+
+          const uniqueLanguages = [];
+          response.projects.forEach((project) => {
+            const lang = project.latestGitHubData.language;
+            if (lang && !uniqueLanguages.includes(lang)) {
+              uniqueLanguages.push(lang);
+            }
+          });
+          setLanguages(uniqueLanguages);
+
+          let filteredProjects = response.projects;
+
+          if (filters.searchQuery) {
+            filteredProjects = filteredProjects.filter((project) =>
+              project.name.toLowerCase().includes(filters.searchQuery.toLowerCase())
+            );
           }
-        });
-        setLanguages(uniqueLanguages); // Set the unique languages
 
-        // Apply filters to the projects
-        let filteredProjects = response.projects;
+          if (filters.language) {
+            filteredProjects = filteredProjects.filter(
+              (project) => project.latestGitHubData.language === filters.language
+            );
+          }
 
-        // Apply search query filter
-        if (filters.searchQuery) {
-          filteredProjects = filteredProjects.filter((project) =>
-            project.name.toLowerCase().includes(filters.searchQuery.toLowerCase())
-          );
+          setFilteredProjects(filteredProjects);
+          setCurrentPage(1);
+        } else {
+          console.error("Failed to fetch projects:", response.error);
         }
-
-        // Apply language filter
-        if (filters.language) {
-          filteredProjects = filteredProjects.filter(
-            (project) => project.latestGitHubData.language === filters.language
-          );
-        }
-
-        setFilteredProjects(filteredProjects); // Set the filtered projects
-        setCurrentPage(1); // Reset to the first page when filters change
-      } else {
-        console.error("Failed to fetch projects:", response.error);
-      }
-    });
+      });
+    }
   };
 
   useEffect(() => {
-    fetchProjects(); // Fetch all projects initially
+    if (isAuthenticated) {
+      fetchProjects(); // Fetch all projects initially
+    }
 
     socket.on("connect", () => {
       console.log("Socket reconnected. Fetching projects...");
-      fetchProjects(); // Fetch all projects again when reconnected
+      if (isAuthenticated) {
+        fetchProjects(); // Fetch all projects again when reconnected
+      }
     });
 
     return () => {
       socket.off("connect");
     };
-  }, []);
+  }, [isAuthenticated, user]); // Ensure re-fetching when user changes
 
   const handleCardClick = (projectId) => {
     navigate(`/projects/${projectId}/issues`);
