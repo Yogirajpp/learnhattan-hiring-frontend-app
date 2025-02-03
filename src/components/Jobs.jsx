@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react"
-import { useParams } from "react-router-dom"
+// import { useParams } from "react-router-dom"
 import axios from "axios"
 import { JobCard } from "./jobCard"
 import { JobDetail } from "./jobDetail"
 import { baseurl } from "../lib/utils"
 
 export default function JobsBoard() {
-  const { companyId } = useParams()
+  // const { companyId } = useParams()
   const [jobs, setJobs] = useState([])
   const [filteredJobs, setFilteredJobs] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
@@ -109,6 +109,7 @@ export default function JobsBoard() {
             <JobCard
               key={job._id}
               title={job.title}
+              companyName={job.companyId?.name}
               tags={job.tags}
               minExp={job.minExp}
               jobType={job.jobType}
@@ -127,7 +128,7 @@ export default function JobsBoard() {
             <JobDetail
               title={selectedJob.title}
               description={selectedJob.description}
-              companyName={selectedJob.companyName}
+              companyName={selectedJob.companyId?.name}
               minExp={selectedJob.minExp}
               tags={selectedJob.tags}
               jobType={selectedJob.jobType}
