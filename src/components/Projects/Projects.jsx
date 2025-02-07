@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { io } from "socket.io-client";
 import ProjectCard from "./ProjectCard";
 import ProjectFilter from "./ProjectFilter";
@@ -36,7 +36,7 @@ const ProjectDashboard = () => {
       socket.emit("getAllProjects", requestData, (response) => {
         if (response.success) {
           setAllProjects(response.projects);
-          console.log(response.projects);
+          console.log(response);
 
           const uniqueLanguages = [];
           response.projects.forEach((project) => {

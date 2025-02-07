@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react"
-// import { useParams } from "react-router-dom"
 import axios from "axios"
 import { JobCard } from "./jobCard"
 import { JobDetail } from "./jobDetail"
 import { baseurl } from "../lib/utils"
 
 export default function JobsBoard() {
-  // const { companyId } = useParams()
   const [jobs, setJobs] = useState([])
   const [filteredJobs, setFilteredJobs] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
   const [balance] = useState(900)
+
+  // Company names mapping
+  const [companyNames, setCompanyNames] = useState({})
 
   // Filter states
   const [searchFilter, setSearchFilter] = useState("")
@@ -27,12 +28,29 @@ export default function JobsBoard() {
   }
 
   useEffect(() => {
-    
     const fetchJobs = async () => {
       try {
         const response = await axios.get(`${baseurl}/api/getAllJobs`)
         setJobs(response.data.jobs)
         setFilteredJobs(response.data.jobs)
+
+        // Extract unique company IDs
+        const uniqueCompanyIds = [...new Set(response.data.jobs.map((job) => job.companyId))]
+
+        // Fetch company names
+        const companyNamesMap = {}
+        await Promise.all(
+          uniqueCompanyIds.map(async (companyId) => {
+            try {
+              const res = await axios.get(`${baseurl}/api//getCompanyName/${companyId}`)
+              companyNamesMap[companyId] = res.data.companyName
+            } catch (error) {
+              console.error(`Error fetching company name for ${companyId}:`, error)
+              companyNamesMap[companyId] = "Unknown Company"
+            }
+          })
+        )
+        setCompanyNames(companyNamesMap)
       } catch (error) {
         console.error("Error fetching jobs:", error)
       }
@@ -109,7 +127,7 @@ export default function JobsBoard() {
             <JobCard
               key={job._id}
               title={job.title}
-              companyName={job.companyId?.name}
+              companyName={companyNames[job.companyId] || "Loading..."}
               tags={job.tags}
               minExp={job.minExp}
               jobType={job.jobType}
@@ -126,9 +144,10 @@ export default function JobsBoard() {
         <div className="md:col-span-7">
           {selectedJob ? (
             <JobDetail
+              jobId={selectedJob._id}
               title={selectedJob.title}
               description={selectedJob.description}
-              companyName={selectedJob.companyId?.name}
+              companyName={companyNames[selectedJob.companyId] || "Loading..."}
               minExp={selectedJob.minExp}
               tags={selectedJob.tags}
               jobType={selectedJob.jobType}
@@ -166,4 +185,3 @@ export default function JobsBoard() {
     </div>
   )
 }
-
