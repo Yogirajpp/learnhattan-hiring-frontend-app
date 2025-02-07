@@ -5,47 +5,65 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { io } from "socket.io-client";
 import { AuthContext } from "@/providers/auth-provider";
+import axios from "axios"; // Import Axios
 
 const socket = io("http://localhost:5000"); // Adjust to match your backend
 
 const IssueDetail = ({ selectedIssue }) => {
   const { user, isAuthenticated } = useContext(AuthContext); // Access user and isAuthenticated from AuthContext
-  console.log("User:", user);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [applying, setApplying] = useState(false); // State for button loading
 
   useEffect(() => {
     if (isAuthenticated) {
       if (!selectedIssue) return;
-      
-      console.log(selectedIssue);
-      const userId = user._id; // Assuming `user.id` holds the userId
-        console.log("Fetching issue detail for user:", userId);
 
-
-      // Extract owner and repoName from the issue URL
+      const userId = user._id;
       const urlParts = selectedIssue.url.split("/");
-      const owner = urlParts[3]; // "facebook"
-      const repoName = urlParts[4]; // "react"
-      const issueId = urlParts[6]; // Use issue number instead of id
-      console.log(owner, repoName, issueId);
+      const owner = urlParts[3];
+      const repoName = urlParts[4];
+      const issueId = urlParts[6];
 
       setLoading(true);
-      socket.emit(
-        "getIssueComments",
-        {userId, owner, repoName, issueId },
-        (response) => {
-          setLoading(false);
-          if (response.success) {
-              console.log(response.comments);
-            setComments(response.comments);
-          } else {
-            console.error(response.error);
-          }
+      socket.emit("getIssueComments", { userId, owner, repoName, issueId }, (response) => {
+        setLoading(false);
+        if (response.success) {
+          setComments(response.comments);
+        } else {
+          console.error(response.error);
         }
-      );
+      });
     }
   }, [isAuthenticated, selectedIssue]);
+
+  const handleApply = async () => {
+    if (!isAuthenticated) {
+      alert("Please log in to apply.");
+      return;
+    }
+    setApplying(true);
+    const urlParts = selectedIssue.url.split("/");
+    try {
+      const response = await axios.post("http://localhost:5000/api/applyForIssue", {
+        userId: user._id,
+        owner: urlParts[3],
+        repo: urlParts[4],
+        issue_number: parseInt(urlParts[urlParts.length - 1]),
+      });
+
+      if (response.data.success) {
+        alert("Applied successfully!");
+      } else {
+        alert("Failed to apply.");
+      }
+    } catch (error) {
+      console.error("Error applying:", error);
+      alert("An error occurred.");
+    } finally {
+      setApplying(false);
+    }
+  };
 
   if (!selectedIssue) {
     return <p className="text-gray-500">Select an issue to view details.</p>;
@@ -65,10 +83,7 @@ const IssueDetail = ({ selectedIssue }) => {
         {selectedIssue.labels.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedIssue.labels.map((label) => (
-              <span
-                key={label.id}
-                className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-200"
-              >
+              <span key={label.id} className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-200">
                 {label.name}
               </span>
             ))}
@@ -80,11 +95,7 @@ const IssueDetail = ({ selectedIssue }) => {
           {loading ? (
             <p className="text-gray-500">Loading comments...</p>
           ) : comments.length > 0 ? (
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeRaw]}
-              className="prose text-sm"
-            >
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} className="prose text-sm">
               {comments[0].body || "No comment available"}
             </ReactMarkdown>
           ) : (
@@ -92,19 +103,29 @@ const IssueDetail = ({ selectedIssue }) => {
           )}
         </div>
       </div>
+      <Button className="mt-4 w-full" onClick={handleApply} disabled={applying}>
+        {applying ? "Applying..." : "Apply"}
+      </Button>
       <div className="mt-4 flex justify-between gap-2">
-        <Button as="a" href={selectedIssue.url} target="_blank" className="w-full">
+        <Button
+          onClick={() =>
+            window.open(
+              `${selectedIssue.url}`,
+              "_blank"
+            )
+          }
+          variant="outline"
+          className="w-full"
+        >
           View Issue on GitHub
         </Button>
+
         {selectedIssue.pullRequestUrl && (
-          <Button as="a" href={selectedIssue.pullRequestUrl} target="_blank" className="w-full">
+          <Button as="a" href={selectedIssue.pullRequestUrl} variant="outline" target="_blank" className="w-full">
             View Pull Request
           </Button>
         )}
       </div>
-      <Button className="mt-4 w-full" variant="outline">
-        Apply Changes
-      </Button>
     </div>
   );
 };
