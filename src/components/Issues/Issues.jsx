@@ -13,23 +13,20 @@ const Issues = () => {
   const { user, isAuthenticated } = useContext(AuthContext);
   const { projectId } = useParams();
   const navigate = useNavigate();
-  
+
   const [issues, setIssues] = useState([]);
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [state, setState] = useState("open"); // New state for issue filter
+  const [state, setState] = useState("open"); // Filter state
   const issuesPerPage = 10;
 
   useEffect(() => {
     if (isAuthenticated && projectId) {
       const userId = user._id;
-      console.log(`Fetching ${state} issues for user:`, userId);
 
-      // Emit event to fetch project issues with the selected state (open/closed)
       socket.emit("getProjectIssues", { userId, projectId, state }, (response) => {
         if (response.success) {
-          console.log(response.issues.slice(0, 3));
           setIssues(response.issues);
           setTotalPages(Math.ceil(response.issues.length / issuesPerPage));
         } else {
@@ -37,7 +34,6 @@ const Issues = () => {
         }
       });
 
-      // Listen for real-time issue updates
       socket.on(`updateProjectIssues`, (updatedData) => {
         setIssues(updatedData.issues);
         setTotalPages(Math.ceil(updatedData.issues.length / issuesPerPage));
@@ -47,7 +43,7 @@ const Issues = () => {
         socket.off(`updateProjectIssues`);
       };
     }
-  }, [isAuthenticated, projectId, state]); // Re-run when `state` changes
+  }, [isAuthenticated, projectId, state]);
 
   const handleIssueSelect = (issue) => {
     setSelectedIssue(issue);
@@ -57,19 +53,26 @@ const Issues = () => {
     setCurrentPage(page);
   };
 
-  const displayedIssues = issues.slice(
+  // **Filtering Logic**
+  const filteredIssues = issues.filter((issue) => {
+    if (state === "open") return issue.state === "open";
+    if (state === "closed") return issue.state === "closed" && issue.pullRequestUrl === null;
+    if (state === "pull_requests") return issue.state === "closed" && issue.pullRequestUrl;
+    return true;
+  });
+
+  const displayedIssues = filteredIssues.slice(
     (currentPage - 1) * issuesPerPage,
     currentPage * issuesPerPage
   );
 
   return (
     <div>
-      {/* Navigation Button */}
       <Button className="mb-4" onClick={() => navigate("/projects")}>
         Back to Projects
       </Button>
 
-      {/* Open Issues & Closed Issues Buttons */}
+      {/* Open, Closed, and Pull Requests Buttons */}
       <div className="flex gap-4 mb-4">
         <Button
           variant={state === "open" ? "default" : "outline"}
@@ -82,6 +85,12 @@ const Issues = () => {
           onClick={() => setState("closed")}
         >
           Closed Issues
+        </Button>
+        <Button
+          variant={state === "pull_requests" ? "default" : "outline"}
+          onClick={() => setState("pull_requests")}
+        >
+          Pull Requests
         </Button>
       </div>
 
