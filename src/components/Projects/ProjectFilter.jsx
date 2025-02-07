@@ -54,7 +54,7 @@ const ProjectFilter = ({ languages, projects, onApplyFilters }) => {
         <h3 className="font-semibold text-3xl mb-4">Language</h3>
 
         {/* Language Filters */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {languages.map((language) => (
             <div
               key={language}

@@ -1,3 +1,4 @@
+// Issues.jsx
 import { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -6,8 +7,6 @@ import IssueCard from "./IssueCard";
 import IssueDetail from "./issueDetail";
 import { baseurl } from "@/lib/utils";
 import { AuthContext } from "@/providers/auth-provider";
-
-const socket = io(`${baseurl}`);
 
 const Issues = () => {
   const { user, isAuthenticated } = useContext(AuthContext);
@@ -18,36 +17,71 @@ const Issues = () => {
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [state, setState] = useState("open"); // New state for issue filter
+  const [state, setState] = useState("open"); // "open" or "closed"
   const issuesPerPage = 10;
 
+  // Create a socket instance and store it in state.
+  const [socketInstance, setSocketInstance] = useState(null);
+
+  // Initialize (or reinitialize) the socket connection on mount/refresh.
   useEffect(() => {
-    if (isAuthenticated && projectId) {
+    // Create a new socket instance with autoConnect disabled.
+    const newSocket = io(`${baseurl}`, { autoConnect: false });
+    
+    // Connect the socket.
+    newSocket.connect();
+    
+    // When the connection is established, join the specific project room.
+    newSocket.on("connect", () => {
+      console.log("Socket connected with id:", newSocket.id);
+      if (projectId) {
+        newSocket.emit("joinProject", { projectId });
+      }
+    });
+
+    // Save the socket instance in state.
+    setSocketInstance(newSocket);
+
+    // Cleanup on component unmount: disconnect the socket.
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [projectId]); // Re-run when projectId changes (or on refresh)
+
+  // Use the socket instance to fetch issues and listen for updates.
+  useEffect(() => {
+    if (isAuthenticated && projectId && socketInstance) {
       const userId = user._id;
       console.log(`Fetching ${state} issues for user:`, userId);
 
-      // Emit event to fetch project issues with the selected state (open/closed)
-      socket.emit("getProjectIssues", { userId, projectId, state }, (response) => {
+      // Request the project issues from the server.
+      // The server should return an object: { open: [...], closed: [...] }.
+      socketInstance.emit("getProjectIssues", { userId, projectId, state }, (response) => {
         if (response.success) {
-          setIssues(response.issues);
-          setTotalPages(Math.ceil(response.issues.length / issuesPerPage));
-          setCurrentPage(1); // Reset to first page on state change
+          // Filter the issues based on the selected state.
+          const filteredIssues = response.issues[state] || [];
+          setIssues(filteredIssues);
+          setTotalPages(Math.ceil(filteredIssues.length / issuesPerPage));
+          setCurrentPage(1); // Reset to first page on state change.
         } else {
           console.error("Failed to fetch issues:", response.error);
         }
       });
 
-      // Listen for real-time issue updates
-      socket.on(`updateProjectIssues`, (updatedData) => {
-        setIssues(updatedData.issues);
-        setTotalPages(Math.ceil(updatedData.issues.length / issuesPerPage));
+      // Listen for real-time updates from the server.
+      socketInstance.on("updateProjectIssues", (updatedData) => {
+        // updatedData.issues is an object: { open: [...], closed: [...] }.
+        const filteredIssues = updatedData.issues[state] || [];
+        setIssues(filteredIssues);
+        setTotalPages(Math.ceil(filteredIssues.length / issuesPerPage));
       });
 
+      // Cleanup the update listener when dependencies change.
       return () => {
-        socket.off(`updateProjectIssues`);
+        socketInstance.off("updateProjectIssues");
       };
     }
-  }, [isAuthenticated, projectId, state]); // Re-run when `state` changes
+  }, [isAuthenticated, projectId, state, user, socketInstance]);
 
   const handleIssueSelect = (issue) => {
     setSelectedIssue(issue);
@@ -97,7 +131,9 @@ const Issues = () => {
               />
             ))
           ) : (
-            <p className="text-gray-600">No {state} issues found for this project.</p>
+            <p className="text-gray-600">
+              No {state} issues found for this project.
+            </p>
           )}
 
           {/* Pagination */}
