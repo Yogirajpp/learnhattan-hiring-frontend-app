@@ -8,9 +8,14 @@ const IssueCard = ({ issue, onClick }) => {
     >
       <CardContent className="p-4">
         {/* Issue Title */}
-        <CardTitle className="text-xl font-bold text-gray-800">
-          {issue.title}
-        </CardTitle>
+        <div className="flex justify-between items-center">
+          <div className="text-xl font-bold text-gray-800">
+            {issue.title}
+          </div>
+          <div className="text-xl font-bold text-gray-800">
+            {issue.exp} XP 
+          </div>
+        </div>
 
         {/* Created By */}
         <p className="text-gray-600 mt-1">
