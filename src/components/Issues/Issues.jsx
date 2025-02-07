@@ -10,30 +10,28 @@ import { AuthContext } from "@/providers/auth-provider";
 const socket = io(`${baseurl}`);
 
 const Issues = () => {
-  const { user, isAuthenticated } = useContext(AuthContext); // Access user and isAuthenticated from AuthContext
-  console.log("User:", user);
+  const { user, isAuthenticated } = useContext(AuthContext);
   const { projectId } = useParams();
+  const navigate = useNavigate();
+  
   const [issues, setIssues] = useState([]);
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [state, setState] = useState("open"); // New state for issue filter
   const issuesPerPage = 10;
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && projectId) {
+      const userId = user._id;
+      console.log(`Fetching ${state} issues for user:`, userId);
 
-
-      if (!projectId) return;
-
-      const userId = user._id; // Assuming `user.id` holds the userId
-        console.log("Fetching issues for user:", userId);
-
-      // Emit event to fetch project issues
-      socket.emit("getProjectIssues", { userId, projectId }, (response) => {
+      // Emit event to fetch project issues with the selected state (open/closed)
+      socket.emit("getProjectIssues", { userId, projectId, state }, (response) => {
         if (response.success) {
           setIssues(response.issues);
           setTotalPages(Math.ceil(response.issues.length / issuesPerPage));
+          setCurrentPage(1); // Reset to first page on state change
         } else {
           console.error("Failed to fetch issues:", response.error);
         }
@@ -45,12 +43,11 @@ const Issues = () => {
         setTotalPages(Math.ceil(updatedData.issues.length / issuesPerPage));
       });
 
-      // Cleanup on component unmount
       return () => {
         socket.off(`updateProjectIssues`);
       };
     }
-  }, [isAuthenticated, projectId]);
+  }, [isAuthenticated, projectId, state]); // Re-run when `state` changes
 
   const handleIssueSelect = (issue) => {
     setSelectedIssue(issue);
@@ -67,9 +64,27 @@ const Issues = () => {
 
   return (
     <div>
+      {/* Navigation Button */}
       <Button className="mb-4" onClick={() => navigate("/projects")}>
         Back to Projects
       </Button>
+
+      {/* Open Issues & Closed Issues Buttons */}
+      <div className="flex gap-4 mb-4">
+        <Button
+          variant={state === "open" ? "default" : "outline"}
+          onClick={() => setState("open")}
+        >
+          Open Issues
+        </Button>
+        <Button
+          variant={state === "closed" ? "default" : "outline"}
+          onClick={() => setState("closed")}
+        >
+          Closed Issues
+        </Button>
+      </div>
+
       <div className="flex gap-2">
         {/* Issues List (40% width, Scrollable) */}
         <div className="w-2/5 overflow-y-auto pr-4">
@@ -82,7 +97,7 @@ const Issues = () => {
               />
             ))
           ) : (
-            <p className="text-gray-600">No issues found for this project.</p>
+            <p className="text-gray-600">No {state} issues found for this project.</p>
           )}
 
           {/* Pagination */}
