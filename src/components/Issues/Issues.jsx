@@ -29,6 +29,7 @@ const Issues = () => {
       // Emit event to fetch project issues with the selected state (open/closed)
       socket.emit("getProjectIssues", { userId, projectId, state }, (response) => {
         if (response.success) {
+          console.log(response.issues.slice(0, 3));
           setIssues(response.issues);
           setTotalPages(Math.ceil(response.issues.length / issuesPerPage));
           setCurrentPage(1); // Reset to first page on state change
