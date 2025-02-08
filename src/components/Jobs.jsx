@@ -8,7 +8,7 @@ export default function JobsBoard() {
   const [jobs, setJobs] = useState([])
   const [filteredJobs, setFilteredJobs] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
-  const [balance] = useState(900)
+  // const [balance] = useState(900)
 
   // Company names mapping
   const [companyNames, setCompanyNames] = useState({})
@@ -89,7 +89,6 @@ export default function JobsBoard() {
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-xl sm:text-2xl font-bold">Jobs</h1>
-        <div className="text-sm sm:text-base text-gray-600">Balance: ${balance}</div>
       </div>
 
       {/* Filter inputs */}

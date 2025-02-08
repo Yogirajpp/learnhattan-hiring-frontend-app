@@ -1,4 +1,9 @@
-import { Card, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+
+const truncateTitle = (title, wordLimit = 5) => {
+  const words = title.split(" ");
+  return words.length > wordLimit ? words.slice(0, wordLimit).join(" ") + "..." : title;
+};
 
 const IssueCard = ({ issue, onClick }) => {
   return (
@@ -10,9 +15,9 @@ const IssueCard = ({ issue, onClick }) => {
         {/* Issue Title */}
         <div className="flex justify-between items-center">
           <div className="text-xl font-bold text-gray-800">
-            {issue.title}
+            {truncateTitle(issue.title)}
           </div>
-          <div className="text-xl font-bold text-gray-800">
+          <div className="text-xl font-bold text-[#D8A7DF] flex-shrink-0">
             {issue.exp} XP 
           </div>
         </div>

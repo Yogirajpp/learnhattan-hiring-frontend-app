@@ -73,7 +73,7 @@ const Dashboard = () => {
 
       {selectedTab === "Overview" && (
         <div className="w-full">
-          <div className="grid grid-cols-2 gap-1 h-full">
+          <div className="grid grid-cols-2 gap-2 h-full">
             {/* Left Side: Avatar and Details */}
             <Card className="flex flex-col border border-black border-opacity-50 p-4 h-full">
               <div className="flex flex-row items-center justify-start">
@@ -118,7 +118,7 @@ const Dashboard = () => {
               <Card className="border p-3 border-black border-opacity-50 text-gray-800 flex-1">
                 <h2 className="text-2xl font-semibold mb-3">Stats</h2>
                 <div className="flex justify-between">
-                  <p>ExpPoints:</p> <p>{5}</p>
+                  <p>ExpPoints:</p> <p>{371}</p>
                 </div>
                 <div className="flex justify-between">
                   <p>Leagues:</p> <p>{"Bronze 3"}</p>
@@ -130,18 +130,18 @@ const Dashboard = () => {
                   <p>Project Contributions:</p> <p>{2}</p>
                 </div>
                 <div className="flex justify-between">
-                  <p>Rank:</p> <p>{12}</p>
+                  <p>Rank:</p> <p>{2}</p>
                 </div>
               </Card>
             </div>
           </div>
 
           {/* New Row with Additional Cards */}
-          <div className="grid grid-cols-2 gap-1 mt-2">
+          <div className="grid grid-cols-2 gap-2 mt-2">
             {/* About Me Section */}
             <Card className="p-4 border border-black border-opacity-50">
               <h2 className="text-2xl font-semibold mb-3">About Me</h2>
-              <p className="text-gray-800">{githubBio}</p>
+              <p className="text-lg text-gray-800">{githubBio}</p>
             </Card>
 
             {/* GitHub ReadMe Stats */}
