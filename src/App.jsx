@@ -8,12 +8,15 @@ import Dashboard from './components/Dashboard';
 import Jobs from './components/Jobs';
 import Leaderboard from './components/Leaderboard';
 import SidebarComponent from './components/Sidebar'; // Import the Sidebar component
-import AuthProvider from "./providers/auth-provider";
+import AuthProvider, { AuthContext } from "./providers/auth-provider";
 import QueryProvider from './providers/query-provider';
 import Issues from "./components/Issues/Issues";
 import ProjectDashboard from "./components/Projects/Projects";
+import { useContext } from "react";
 
 const App = () => {
+  const { user, isAuthenticated } = useContext(AuthContext);
+  console.log(isAuthenticated)
   return (
     <QueryProvider>
       <AuthProvider>
